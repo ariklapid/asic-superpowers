@@ -12,13 +12,24 @@ This is the ASIC adaptation of TDD discipline. Use the strongest practical evide
 ## Workflow
 
 1. Classify the work lane: RTL, DV, Physical Design / Backend, tool parser, docs, or fixture.
-2. Identify the user's EDA toolchain context: configured commands, report dialects, filelists, constraints, waivers, libraries, modes/corners, regressions, and signoff stage when available.
-3. Name the claim the work must support.
-4. Choose the minimum evidence for that claim within the user's toolchain.
-5. Capture or reproduce the current state before editing.
-6. Make the smallest scoped change.
-7. Re-run the evidence command or re-check the evidence artifact.
-8. Report what is proven, what is not proven, what toolchain context was used, and what remains unresolved.
+2. Read local project overlays before editing: `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, README/developer docs, flow docs, and local source-control instructions.
+3. Identify the user's EDA toolchain context: configured commands, report dialects, filelists, constraints, waivers, libraries, modes/corners, regressions, and signoff stage when available.
+4. Name the claim the work must support.
+5. Choose the minimum evidence for that claim within the user's toolchain.
+6. Capture or reproduce the current state before editing.
+7. Make the smallest scoped change.
+8. Re-run the evidence command or re-check the evidence artifact.
+9. Report what is proven, what is not proven, what toolchain context was used, and what remains unresolved.
+
+## Local Overlays, Source Control, And Generated RTL
+
+Before modifying hardware artifacts:
+
+- Follow local overlays even when they are stricter than this plugin.
+- If the project uses Perforce, run the local `p4 opened`/status check when available and use `p4 edit` or `p4 add` before changing tracked files. Do not work around read-only files with chmod/copy tricks unless the user explicitly authorizes it.
+- If local guidance requires MCP-backed source verification, HDL indexing, elaboration context, or generated-source checks, run those before RTL/DV edits and record the evidence scope.
+- For generated Verilog, generated netlists, or checked-in generated collateral, identify the generator/source and review the generated output before editing. Prefer changing the generator and regenerating unless the project explicitly treats the generated file as hand-maintained.
+- If these local prerequisites cannot be run, state that the review or edit is blocked or limited before proceeding.
 
 ## Evidence By Lane
 

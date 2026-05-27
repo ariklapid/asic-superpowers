@@ -8,7 +8,8 @@ current ASIC plugin validation flow, use
 
 Current ASIC status as of 2026-05-23:
 
-- `npm run validate` passes deterministic ASIC checks.
+- `scripts/validate.sh` passes deterministic ASIC metadata, link, trigger, and
+  fixture checks.
 - The new ASIC skills pass system skill validation when PyYAML is available.
 - The plugin passes system plugin validation when PyYAML is available.
 - Live harness transcript evals remain the next release gate.

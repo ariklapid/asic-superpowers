@@ -14,14 +14,14 @@ export XDG_CONFIG_HOME="$TEST_HOME/.config"
 export OPENCODE_CONFIG_DIR="$TEST_HOME/.config/opencode"
 
 # Standard install layout:
-#   $OPENCODE_CONFIG_DIR/superpowers/             ← package root
-#   $OPENCODE_CONFIG_DIR/superpowers/skills/      ← skills dir (../../skills from plugin)
-#   $OPENCODE_CONFIG_DIR/superpowers/.opencode/plugins/superpowers.js ← plugin file
-#   $OPENCODE_CONFIG_DIR/plugins/superpowers.js   ← symlink OpenCode reads
+#   $OPENCODE_CONFIG_DIR/asic-superpowers/             ← package root
+#   $OPENCODE_CONFIG_DIR/asic-superpowers/skills/      ← skills dir (../../skills from plugin)
+#   $OPENCODE_CONFIG_DIR/asic-superpowers/.opencode/plugins/asic-superpowers.js ← plugin file
+#   $OPENCODE_CONFIG_DIR/plugins/asic-superpowers.js   ← symlink OpenCode reads
 
-SUPERPOWERS_DIR="$OPENCODE_CONFIG_DIR/superpowers"
+SUPERPOWERS_DIR="$OPENCODE_CONFIG_DIR/asic-superpowers"
 SUPERPOWERS_SKILLS_DIR="$SUPERPOWERS_DIR/skills"
-SUPERPOWERS_PLUGIN_FILE="$SUPERPOWERS_DIR/.opencode/plugins/superpowers.js"
+SUPERPOWERS_PLUGIN_FILE="$SUPERPOWERS_DIR/.opencode/plugins/asic-superpowers.js"
 
 # Install skills
 mkdir -p "$SUPERPOWERS_DIR"
@@ -29,11 +29,11 @@ cp -r "$REPO_ROOT/skills" "$SUPERPOWERS_DIR/"
 
 # Install plugin
 mkdir -p "$(dirname "$SUPERPOWERS_PLUGIN_FILE")"
-cp "$REPO_ROOT/.opencode/plugins/superpowers.js" "$SUPERPOWERS_PLUGIN_FILE"
+cp "$REPO_ROOT/.opencode/plugins/asic-superpowers.js" "$SUPERPOWERS_PLUGIN_FILE"
 
 # Register plugin via symlink (what OpenCode actually reads)
 mkdir -p "$OPENCODE_CONFIG_DIR/plugins"
-ln -sf "$SUPERPOWERS_PLUGIN_FILE" "$OPENCODE_CONFIG_DIR/plugins/superpowers.js"
+ln -sf "$SUPERPOWERS_PLUGIN_FILE" "$OPENCODE_CONFIG_DIR/plugins/asic-superpowers.js"
 
 # Create test skills in different locations for testing
 
@@ -67,10 +67,10 @@ EOF
 
 echo "Setup complete: $TEST_HOME"
 echo "OPENCODE_CONFIG_DIR:  $OPENCODE_CONFIG_DIR"
-echo "Superpowers dir:      $SUPERPOWERS_DIR"
+echo "ASIC Superpowers dir: $SUPERPOWERS_DIR"
 echo "Skills dir:           $SUPERPOWERS_SKILLS_DIR"
 echo "Plugin file:          $SUPERPOWERS_PLUGIN_FILE"
-echo "Plugin registered at: $OPENCODE_CONFIG_DIR/plugins/superpowers.js"
+echo "Plugin registered at: $OPENCODE_CONFIG_DIR/plugins/asic-superpowers.js"
 echo "Test project at:      $TEST_HOME/test-project"
 
 # Helper function for cleanup (call from tests or trap)

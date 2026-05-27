@@ -10,14 +10,15 @@ Status as of 2026-05-23:
 - Fixture provenance is complete for the current deterministic eval corpus.
 - Third-party fixture files have source URLs and local license files.
 - The generated timing report is explicitly labeled synthetic.
-- The corpus supports six deterministic trigger scenarios, including
-  vendor-neutral EDA toolchain discovery.
+- The corpus supports eight deterministic trigger scenarios, including
+  vendor-neutral EDA toolchain discovery, generic tooling, and mixed tooling
+  plus hardware-report interpretation.
 - No fixture should be treated as design signoff evidence.
 
 ## Local Fixtures
 
 - `asic-ai-workflows/*`
-  - Source: `/home/arik/projects/asic-ai-workflows`
+  - Source: local checkout of `asic-ai-workflows`
   - Commit: `b8e67e620f7ccb7374fc011c199889017c5ea2e8`
   - License: MIT, copied to `third_party/licenses/asic-ai-workflows-MIT-LICENSE`
   - Purpose: compact RTL, DV, CDC, timing-risk, and JSON report fixtures.

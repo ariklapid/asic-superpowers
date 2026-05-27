@@ -42,7 +42,7 @@ local plugin sources.
 Use the local plugin path while developing:
 
 ```text
-/plugin install /home/arik/projects/asic-superpowers
+/plugin install /path/to/asic-superpowers
 ```
 
 ### OpenCode
@@ -51,7 +51,7 @@ Add this checkout to `opencode.json`:
 
 ```json
 {
-  "plugin": ["/home/arik/projects/asic-superpowers"]
+  "plugin": ["/path/to/asic-superpowers"]
 }
 ```
 
@@ -62,7 +62,7 @@ Restart OpenCode.
 From this repo:
 
 ```bash
-gemini extensions install /home/arik/projects/asic-superpowers
+gemini extensions install /path/to/asic-superpowers
 ```
 
 If your harness does not support local plugin installs, use the repo's `skills/`
@@ -213,13 +213,13 @@ Current status as of 2026-05-23:
 - `using-asic-superpowers` and `hardware-evidence-first-development` exist and validate.
 - RTL, DV, Physical Design, EDA toolchain, review, evidence, and claim-discipline references exist.
 - README, OpenCode docs, validation plan, and fixture provenance are current.
-- Deterministic validation passes locally.
+- Deterministic metadata, link, trigger, and fixture validation passes locally.
 - Live harness transcript evals are still required before an industry-grade release claim.
 
 Run:
 
 ```bash
-npm run validate
+scripts/validate.sh
 ```
 
 This checks:
@@ -230,6 +230,11 @@ This checks:
 - RTL/DV/Physical Design trigger scenarios
 - eval fixture presence and provenance
 - vendor-neutral EDA toolchain-awareness references
+
+`npm run validate` is a convenience wrapper when npm is installed. The shell
+launcher selects Python 3.7+ automatically, so workstations where `python3` is
+older can set `PYTHON=/path/to/python3.11` or rely on a versioned
+`python3.11`/`python3.10` binary in `PATH`.
 
 The repo also validates the new skills with the system skill validator and the
 plugin with the system plugin validator. Live harness transcript evals are still
@@ -262,7 +267,7 @@ Next release work:
    project data.
 3. Pressure-test unsupported claim prompts: lint clean, CDC clean, timing
    closed, signoff clean, scoreboard fixed, and generic EDA report assumptions.
-4. Iterate only on failures observed in transcripts, then re-run `npm run validate`.
+4. Iterate only on failures observed in transcripts, then re-run `scripts/validate.sh`.
 5. Add optional deeper workflow bridges to `asic-ai-workflows` only when a real
    repeated task needs them.
 6. Keep the plugin lean and vendor-neutral; do not add mandatory EDA

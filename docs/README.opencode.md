@@ -10,7 +10,8 @@ Status as of 2026-05-23:
 - The OpenCode plugin file is `.opencode/plugins/asic-superpowers.js`.
 - The plugin injects `using-asic-superpowers`, not upstream `using-superpowers`.
 - `node -c .opencode/plugins/asic-superpowers.js` passes locally.
-- Full deterministic validation passes via `npm run validate`.
+- Deterministic metadata, link, trigger, and fixture validation passes via
+  `scripts/validate.sh` or `npm run validate`.
 - A clean OpenCode live transcript still needs to be captured before release.
 
 ## Local Development Install
@@ -19,7 +20,7 @@ Add this checkout to the `plugin` array in `opencode.json`:
 
 ```json
 {
-  "plugin": ["/home/arik/projects/asic-superpowers"]
+  "plugin": ["/path/to/asic-superpowers"]
 }
 ```
 
@@ -63,9 +64,12 @@ The OpenCode plugin:
 Run from the repo root:
 
 ```bash
-npm run validate
+scripts/validate.sh
 node -c .opencode/plugins/asic-superpowers.js
 ```
+
+`node` is only required for the OpenCode plugin syntax/cache tests. The
+deterministic repository validation itself uses Python 3.7+.
 
 See `docs/ASIC_PLUGIN_VALIDATION_PLAN.md` for the full RTL/DV/Physical Design
 validation flow.

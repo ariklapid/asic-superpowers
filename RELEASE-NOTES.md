@@ -1,5 +1,19 @@
 # ASIC Superpowers Release Notes
 
+## v5.1.1 (2026-05-27)
+
+- Fixed OpenCode tests to install `.opencode/plugins/asic-superpowers.js` and
+  verify the `using-asic-superpowers` bootstrap cache path.
+- Added `scripts/validate.sh` and a Python selector so deterministic validation
+  can run on workstations where `python3` is too old but `python3.11` or another
+  modern interpreter is available.
+- Tightened `hardware-evidence-first-development` around local overlays,
+  Perforce edit/add/opened state, MCP-backed source verification, and generated
+  Verilog review before hardware edits.
+- Updated validation/status docs from six to eight trigger scenarios and kept
+  deterministic validation claims scoped to metadata, links, triggers, and
+  fixture checks.
+
 ## Unreleased ASIC Superpowers Baseline (2026-05-23)
 
 Current status:
@@ -14,9 +28,9 @@ Current status:
   profiling.
 - Lightly adapted brainstorming, writing plans, code review, and
   verification-before-completion for ASIC evidence gates.
-- Added eval fixtures with provenance and six deterministic trigger scenarios.
-- Added validation scripts and `npm run validate`.
-- Deterministic validation passes locally.
+- Added eval fixtures with provenance and eight deterministic trigger scenarios.
+- Added validation scripts, `scripts/validate.sh`, and `npm run validate`.
+- Deterministic metadata, link, trigger, and fixture validation passes locally.
 
 Future plan before industry-grade release:
 

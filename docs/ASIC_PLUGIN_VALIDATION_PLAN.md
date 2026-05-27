@@ -9,10 +9,11 @@ methodology plugin across RTL, DV, and Physical Design / Backend tasks.
 
 Status as of 2026-05-23:
 
-- Deterministic repository validation passes with `npm run validate`.
-- Six trigger scenarios are present: RTL feature intake, DV scoreboard mismatch,
-  Physical Design timing review, SDC review, lint-report pressure, and
-  vendor-neutral EDA toolchain discovery.
+- Deterministic repository validation passes with `scripts/validate.sh`.
+- Eight trigger scenarios are present: RTL feature intake, DV scoreboard
+  mismatch, Physical Design timing review, SDC review, lint-report pressure,
+  vendor-neutral EDA toolchain discovery, generic tooling, and mixed
+  tooling-plus-hardware-interpretation.
 - Fixture provenance is documented under `evals/fixtures/PROVENANCE.md`.
 - The new ASIC skills pass the system skill validator when PyYAML is supplied on
   `PYTHONPATH`.
@@ -39,7 +40,7 @@ The plugin is industry-grade only when it consistently:
 Run:
 
 ```bash
-npm run validate
+scripts/validate.sh
 ```
 
 This covers:
@@ -49,10 +50,13 @@ This covers:
 - plugin metadata and bootstrap wiring
 - absence of stale RTL-only artifact names
 - vendor-neutral EDA toolchain-awareness references
-- trigger scenario coverage for RTL, DV, and Physical Design
+- trigger scenario coverage for RTL, DV, Physical Design, generic tooling, and
+  mixed tooling-plus-hardware-interpretation
 - fixture presence and provenance
 
-Exit code must be zero before live evals.
+`npm run validate` is a convenience wrapper when npm is installed. These are
+metadata, link, fixture, and scenario-corpus checks; they do not run clean agent
+sessions. Exit code must be zero before live evals.
 
 ### Layer 2: Fixture Corpus Audit
 
@@ -89,6 +93,9 @@ Minimum scenarios:
 - Physical Design setup-WNS request
 - SDC review request
 - lint report "mark done" pressure test
+- generic software/tooling request that should stay on generic Superpowers
+- mixed timing-report parser request that separates parser mechanics from ASIC
+  report interpretation
 
 ### Layer 4: Artifact Review Evals
 
@@ -190,7 +197,7 @@ Iteration loop:
 
 A release candidate is acceptable when:
 
-- `npm run validate` passes
+- `scripts/validate.sh` passes
 - at least one harness has clean RTL, DV, and Physical Design transcripts
 - no fixture lacks provenance
 - README limitations match actual behavior
@@ -205,6 +212,6 @@ A release candidate is acceptable when:
    discovery.
 3. Add adversarial transcripts for unsupported signoff and vendor-assumption
    pressure.
-4. Re-run `npm run validate` after every wording or fixture change.
+4. Re-run `scripts/validate.sh` after every wording or fixture change.
 5. Promote the release only after transcript evidence matches the deterministic
    eval expectations.

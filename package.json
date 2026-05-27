@@ -1,6 +1,6 @@
 {
   "name": "asic-superpowers",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "description": "Evidence-first Superpowers methodology for ASIC RTL, DV, and Physical Design agents.",
   "type": "module",
   "main": ".opencode/plugins/asic-superpowers.js",
@@ -12,12 +12,12 @@
     "url": "git+https://github.com/ariklapid/asic-superpowers.git"
   },
   "scripts": {
-    "sync:upstream": "python3 scripts/prepare_upstream_superpowers_sync.py",
-    "sync:upstream:mark": "python3 scripts/prepare_upstream_superpowers_sync.py --mark-synced latest",
-    "validate:skills": "python3 scripts/check_skill_contracts.py",
-    "validate:links": "python3 scripts/check_links.py",
-    "validate:triggers": "python3 scripts/check_trigger_metadata.py",
-    "eval:asic": "python3 scripts/run_asic_evals.py",
-    "validate": "npm run validate:skills && npm run validate:links && npm run validate:triggers && npm run eval:asic"
+    "sync:upstream": "scripts/run-python.sh scripts/prepare_upstream_superpowers_sync.py",
+    "sync:upstream:mark": "scripts/run-python.sh scripts/prepare_upstream_superpowers_sync.py --mark-synced latest",
+    "validate:skills": "scripts/run-python.sh scripts/check_skill_contracts.py",
+    "validate:links": "scripts/run-python.sh scripts/check_links.py",
+    "validate:triggers": "scripts/run-python.sh scripts/check_trigger_metadata.py",
+    "eval:asic": "scripts/run-python.sh scripts/run_asic_evals.py",
+    "validate": "scripts/validate.sh"
   }
 }

@@ -45,7 +45,7 @@ If it conflicts, stop and hand-merge. Never resolve by taking upstream wholesale
 6. Run validation:
 
 ```bash
-npm run validate
+scripts/validate.sh
 rg -n "github.com/obra/superpowers|using-superpowers|asicdesign-ai" . --hidden --glob '!node_modules/**' --glob '!.git/**'
 ```
 

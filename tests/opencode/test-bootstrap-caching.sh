@@ -10,12 +10,17 @@ echo "=== Test: Bootstrap Content Caching (#1202) ==="
 source "$SCRIPT_DIR/setup.sh"
 trap cleanup_test_env EXIT
 
+if ! command -v node >/dev/null 2>&1; then
+    echo "  [SKIP] node not installed - skipping bootstrap cache test"
+    exit 0
+fi
+
 run_present_file_check() {
     node "$SCRIPT_DIR/test-bootstrap-caching.mjs" "$SUPERPOWERS_PLUGIN_FILE" present
 }
 
 run_missing_file_check() {
-    mv "$SUPERPOWERS_SKILLS_DIR/using-superpowers/SKILL.md" "$TEST_HOME/using-superpowers.SKILL.md.bak"
+    mv "$SUPERPOWERS_SKILLS_DIR/using-asic-superpowers/SKILL.md" "$TEST_HOME/using-asic-superpowers.SKILL.md.bak"
 
     node "$SCRIPT_DIR/test-bootstrap-caching.mjs" "$SUPERPOWERS_PLUGIN_FILE" missing
 }

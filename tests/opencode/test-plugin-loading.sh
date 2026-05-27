@@ -13,7 +13,7 @@ source "$SCRIPT_DIR/setup.sh"
 # Trap to cleanup on exit
 trap cleanup_test_env EXIT
 
-plugin_link="$OPENCODE_CONFIG_DIR/plugins/superpowers.js"
+plugin_link="$OPENCODE_CONFIG_DIR/plugins/asic-superpowers.js"
 
 # Test 1: Verify plugin file exists and is registered
 echo "Test 1: Checking plugin registration..."
@@ -42,26 +42,37 @@ else
     exit 1
 fi
 
-# Test 3: Check using-superpowers skill exists (critical for bootstrap)
-echo "Test 3: Checking using-superpowers skill (required for bootstrap)..."
-if [ -f "$SUPERPOWERS_SKILLS_DIR/using-superpowers/SKILL.md" ]; then
-    echo "  [PASS] using-superpowers skill exists"
+# Test 3: Check using-asic-superpowers skill exists (critical for bootstrap)
+echo "Test 3: Checking using-asic-superpowers skill (required for bootstrap)..."
+if [ -f "$SUPERPOWERS_SKILLS_DIR/using-asic-superpowers/SKILL.md" ]; then
+    echo "  [PASS] using-asic-superpowers skill exists"
 else
-    echo "  [FAIL] using-superpowers skill not found (required for bootstrap)"
+    echo "  [FAIL] using-asic-superpowers skill not found (required for bootstrap)"
     exit 1
 fi
 
 # Test 4: Verify plugin JavaScript syntax (basic check)
 echo "Test 4: Checking plugin JavaScript syntax..."
-if node --check "$SUPERPOWERS_PLUGIN_FILE" 2>/dev/null; then
+if ! command -v node >/dev/null 2>&1; then
+    echo "  [SKIP] node not installed - skipping JavaScript syntax check"
+elif node --check "$SUPERPOWERS_PLUGIN_FILE" 2>/dev/null; then
     echo "  [PASS] Plugin JavaScript syntax is valid"
 else
     echo "  [FAIL] Plugin has JavaScript syntax errors"
     exit 1
 fi
 
-# Test 5: Verify bootstrap text does not reference a hardcoded skills path
-echo "Test 5: Checking bootstrap does not advertise a wrong skills path..."
+# Test 5: Verify bootstrap text uses ASIC bootstrap skill
+echo "Test 5: Checking bootstrap uses ASIC skill name..."
+if grep -q 'using-asic-superpowers' "$SUPERPOWERS_PLUGIN_FILE"; then
+    echo "  [PASS] Plugin references using-asic-superpowers"
+else
+    echo "  [FAIL] Plugin does not reference using-asic-superpowers"
+    exit 1
+fi
+
+# Test 6: Verify bootstrap text does not reference a hardcoded skills path
+echo "Test 6: Checking bootstrap does not advertise a wrong skills path..."
 if grep -q 'configDir}/skills/superpowers/' "$SUPERPOWERS_PLUGIN_FILE"; then
     echo "  [FAIL] Plugin still references old configDir skills path"
     exit 1
@@ -69,8 +80,8 @@ else
     echo "  [PASS] Plugin does not advertise a misleading skills path"
 fi
 
-# Test 6: Verify personal test skill was created
-echo "Test 6: Checking test fixtures..."
+# Test 7: Verify personal test skill was created
+echo "Test 7: Checking test fixtures..."
 if [ -f "$OPENCODE_CONFIG_DIR/skills/personal-test/SKILL.md" ]; then
     echo "  [PASS] Personal test skill fixture created"
 else

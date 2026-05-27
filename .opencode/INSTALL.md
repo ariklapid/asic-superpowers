@@ -19,7 +19,7 @@ For local development from this checkout, point OpenCode at the package path:
 
 ```json
 {
-  "plugin": ["/home/arik/projects/asic-superpowers"]
+  "plugin": ["/path/to/asic-superpowers"]
 }
 ```
 
@@ -64,7 +64,7 @@ When skills reference Claude Code tools:
 1. Check logs: `opencode run --print-logs "hello" 2>&1 | grep -i "asic\\|superpowers"`
 2. Verify the plugin line in `opencode.json`
 3. Restart OpenCode after plugin or skill changes
-4. Run `npm run validate` from this repo
+4. Run `scripts/validate.sh` from this repo
 
 ## Future Plan
 

@@ -1,6 +1,6 @@
 {
   "name": "asic-superpowers",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "description": "Evidence-first Superpowers methodology for ASIC RTL, DV, and Physical Design agents.",
   "author": {
     "name": "ariklapid",
