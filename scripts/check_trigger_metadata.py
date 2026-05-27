@@ -68,7 +68,7 @@ def main() -> int:
     bootstrap = read("skills/using-asic-superpowers/SKILL.md").lower()
     evidence = read("skills/hardware-evidence-first-development/SKILL.md").lower()
     tool_profile = read("skills/using-asic-superpowers/references/eda-toolchain-profile.md").lower()
-    for term in ["toolchain", "vendor-neutral", "do not assume"]:
+    for term in ["toolchain", "vendor-neutral", "do not assume", "domain routing", "generic superpowers", "mixed route"]:
         if term not in bootstrap + evidence + tool_profile:
             failures.append(f"missing toolchain-awareness term: {term}")
 

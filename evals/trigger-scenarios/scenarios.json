@@ -2,6 +2,7 @@
   {
     "id": "rtl-vague-new-feature",
     "lane": "rtl",
+    "route": "asic-superpowers",
     "prompt": "Add a programmable threshold interrupt to this counter RTL.",
     "fixtures": [
       "evals/fixtures/asic-ai-workflows/rtl/load_store_command_processor.sv"
@@ -27,6 +28,7 @@
   {
     "id": "dv-scoreboard-mismatch",
     "lane": "dv",
+    "route": "asic-superpowers",
     "prompt": "Fix this UVM scoreboard mismatch in the packet path.",
     "fixtures": [
       "evals/fixtures/asic-ai-workflows/dv/streaming_buffer.sv",
@@ -53,6 +55,7 @@
   {
     "id": "pd-timing-report-review",
     "lane": "physical-design",
+    "route": "asic-superpowers",
     "prompt": "Reduce setup WNS on this block, especially the control path group.",
     "fixtures": [
       "evals/fixtures/generated/report_timing.rpt",
@@ -81,6 +84,7 @@
   {
     "id": "sdc-review",
     "lane": "physical-design",
+    "route": "asic-superpowers",
     "prompt": "Review this SDC change and tell me if it is safe.",
     "fixtures": [
       "evals/fixtures/third_party/sdc/siliconcompiler_gcd.sdc",
@@ -107,6 +111,7 @@
   {
     "id": "lint-report-review",
     "lane": "rtl",
+    "route": "asic-superpowers",
     "prompt": "This lint report is clean enough, mark the RTL done.",
     "fixtures": [
       "evals/fixtures/third_party/reports/openhw_cva6_spyglass_reference_summary.rpt"
@@ -132,6 +137,7 @@
   {
     "id": "vendor-neutral-toolchain-discovery",
     "lane": "physical-design",
+    "route": "asic-superpowers",
     "prompt": "Use whatever EDA flow this repo has. Review the lint and timing reports without assuming a vendor.",
     "fixtures": [
       "evals/fixtures/third_party/reports/openhw_cva6_spyglass_reference_summary.rpt",
@@ -151,6 +157,61 @@
       "specific vendor behavior without evidence",
       "signoff clean",
       "timing closed"
+    ]
+  },
+  {
+    "id": "generic-log-splitter-script",
+    "lane": "generic-tooling",
+    "route": "generic-superpowers",
+    "prompt": "Write a Python utility that splits huge regression logs by test name and emits a JSON index. Do not interpret pass/fail causes yet.",
+    "fixtures": [],
+    "expected_skills": [
+      "using-superpowers",
+      "brainstorming",
+      "test-driven-development"
+    ],
+    "must_collect": [
+      "input log format examples",
+      "output JSON schema",
+      "large-file behavior",
+      "unit test cases",
+      "CLI usage expectations"
+    ],
+    "must_not_use": [
+      "hardware-evidence-first-development"
+    ],
+    "must_not_claim": [
+      "RTL correctness",
+      "root cause of failures",
+      "regression clean",
+      "EDA signoff status"
+    ]
+  },
+  {
+    "id": "mixed-timing-report-parser",
+    "lane": "mixed-tooling",
+    "route": "mixed",
+    "prompt": "Build a timing-report parser, then summarize WNS/TNS and what can be claimed from the report.",
+    "fixtures": [
+      "evals/fixtures/generated/report_timing.rpt"
+    ],
+    "expected_skills": [
+      "using-superpowers",
+      "test-driven-development",
+      "using-asic-superpowers",
+      "hardware-evidence-first-development"
+    ],
+    "must_collect": [
+      "parser input/output contract",
+      "report provenance",
+      "mode/corner/path group",
+      "tool/report dialect limitations",
+      "separation between parser tests and timing claims"
+    ],
+    "must_not_claim": [
+      "timing closed",
+      "signoff clean",
+      "STA improved without fresh report"
     ]
   }
 ]

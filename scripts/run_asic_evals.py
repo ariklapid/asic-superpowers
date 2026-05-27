@@ -15,20 +15,30 @@ FIXTURES = ROOT / "evals/fixtures"
 def main() -> int:
     failures: list[str] = []
     scenarios = json.loads(SCENARIOS.read_text(encoding="utf-8"))
-    required_lanes = {"rtl", "dv", "physical-design"}
+    required_lanes = {"rtl", "dv", "physical-design", "generic-tooling", "mixed-tooling"}
+    required_routes = {"asic-superpowers", "generic-superpowers", "mixed"}
     lanes = {scenario.get("lane") for scenario in scenarios}
+    routes = {scenario.get("route") for scenario in scenarios}
     missing_lanes = required_lanes.difference(lanes)
     for lane in sorted(missing_lanes):
         failures.append(f"missing trigger scenario lane: {lane}")
+    missing_routes = required_routes.difference(routes)
+    for route in sorted(missing_routes):
+        failures.append(f"missing trigger scenario route: {route}")
 
     for scenario in scenarios:
         sid = scenario.get("id", "<missing-id>")
-        for field in ["prompt", "lane", "expected_skills", "must_collect", "must_not_claim"]:
+        for field in ["prompt", "lane", "route", "expected_skills", "must_collect", "must_not_claim"]:
             if not scenario.get(field):
                 failures.append(f"{sid}: missing {field}")
         for skill in scenario.get("expected_skills", []):
             if not (ROOT / "skills" / skill / "SKILL.md").exists():
                 failures.append(f"{sid}: expected skill does not exist: {skill}")
+        for skill in scenario.get("must_not_use", []):
+            if not (ROOT / "skills" / skill / "SKILL.md").exists():
+                failures.append(f"{sid}: must_not_use skill does not exist: {skill}")
+            if skill in scenario.get("expected_skills", []):
+                failures.append(f"{sid}: skill is both expected and forbidden: {skill}")
         for fixture in scenario.get("fixtures", []):
             if not (ROOT / fixture).exists():
                 failures.append(f"{sid}: missing fixture {fixture}")
@@ -63,7 +73,7 @@ def main() -> int:
 
     print(f"ASIC eval fixture check passed: {len(scenarios)} trigger scenarios")
     for scenario in scenarios:
-        print(f"- {scenario['id']}: {scenario['lane']}")
+        print(f"- {scenario['id']}: {scenario['lane']} ({scenario['route']})")
     return 0
 
 

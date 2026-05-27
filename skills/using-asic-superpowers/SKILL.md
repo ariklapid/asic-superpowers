@@ -23,7 +23,25 @@ ASIC Superpowers skills override default agent habits, but user instructions alw
 2. ASIC Superpowers skills
 3. Default system behavior
 
-If generic Superpowers and ASIC Superpowers both apply, use ASIC Superpowers for hardware tasks and generic Superpowers for non-hardware software tasks.
+If generic Superpowers and ASIC Superpowers both apply, route by task content, not by the user's job title or repo domain.
+
+## Domain Routing
+
+Before choosing skills, classify the prompt:
+
+1. **ASIC route** - use ASIC Superpowers when the task requires hardware semantics or hardware evidence:
+   - RTL/SystemVerilog behavior, reset, clocks, CDC/RDC, synthesis, lint, formal, timing, power intent, constraints, waivers, DV/UVM/assertions/coverage, Physical Design / Backend, EDA reports, or any hardware correctness/signoff claim.
+   - Use the ASIC workflow below, including `hardware-evidence-first-development` before changing hardware artifacts or making hardware claims.
+
+2. **Generic Superpowers route** - use inherited/generic Superpowers when the task is software, infrastructure, documentation, or workflow mechanics without hardware interpretation:
+   - Python/Tcl/shell scripts, Makefiles, CI, GitHub, package/plugin metadata, docs, release notes, test harnesses, dashboards, data plumbing, repo hygiene, or generic parser mechanics.
+   - Use generic skills such as `using-superpowers`, `brainstorming`, `systematic-debugging`, `test-driven-development`, `verification-before-completion`, and code review skills as appropriate.
+   - Do not apply ASIC evidence-first requirements just because the repository or user is ASIC-related.
+
+3. **Mixed route** - split the work when software mechanics feed hardware interpretation:
+   - Use generic Superpowers for building or debugging the software tool.
+   - Use ASIC Superpowers for interpreting RTL/DV/EDA content, choosing hardware-safe behavior, or making claims based on reports.
+   - State the boundary explicitly, for example: "The parser implementation is generic software work; interpreting WNS/TNS or closure status uses ASIC evidence discipline."
 
 ## Hardware Claim Discipline
 
@@ -49,7 +67,7 @@ Use the skill-loading mechanism provided by the active harness. Platform mapping
 
 Invoke relevant or requested skills BEFORE any response or action. Even a 1% chance a skill might apply means you should invoke it to check.
 
-For ASIC prompts:
+For prompts on the ASIC route:
 
 - New feature, block change, testbench change, constraint change, or backend artifact change: use `brainstorming` first unless the user provided an approved spec.
 - Bug, failing simulation, failing assertion, regression mismatch, lint issue, CDC/RDC finding, timing violation, or unexpected report result: use `systematic-debugging` first.
@@ -84,6 +102,8 @@ STOP if you catch yourself thinking:
 | "The DV failure is probably the scoreboard" | Reproduce and isolate root cause first. |
 | "This timing fix is obvious" | Preserve behavior and distinguish structural risk reduction from STA improvement. |
 | "Everyone uses the same EDA flow" | ASIC projects vary by vendor, version, scripts, corners, waivers, and signoff rules. |
+| "They are an ASIC engineer, so this script task is ASIC work" | Route by required reasoning. Plain software/tooling work should use generic Superpowers. |
+| "This parser compiled, so the timing result is understood" | Parser correctness is software evidence; timing interpretation still needs ASIC report provenance and limits. |
 
 ## Skill Priority
 

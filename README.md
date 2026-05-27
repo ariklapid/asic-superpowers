@@ -151,6 +151,13 @@ The plugin keeps the upstream Superpowers lifecycle: brainstorming, planning,
 systematic debugging, code review, verification before completion, worktrees,
 and branch finishing.
 
+It routes by required reasoning, not by the user's job title or repo domain.
+Plain software/tooling work by an ASIC engineer should use the inherited generic
+Superpowers flow. Tasks that require RTL/DV/EDA interpretation, hardware-safe
+behavior, or hardware completion claims use ASIC Superpowers. Mixed tasks split
+the boundary: generic flow for the software mechanics, ASIC evidence discipline
+for interpreting hardware artifacts or reports.
+
 ## Minimum Useful Inputs
 
 You can start with partial context. The agent should ask for what is missing.
