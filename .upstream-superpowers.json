@@ -1,0 +1,22 @@
+{
+  "upstream": {
+    "repository": "https://github.com/obra/superpowers.git",
+    "branch": "main",
+    "lastSynced": {
+      "sha": "f2cbfbefebbfef77321e4c9abc9e949826bea9d7",
+      "short": "f2cbfbe",
+      "version": "5.1.0",
+      "updatedAt": "2026-05-27T00:00:00Z",
+      "notes": "Initial ASIC Superpowers baseline was created from upstream Superpowers v5.1.0 and then ASIC-specialized."
+    }
+  },
+  "localPolicy": {
+    "doNotOverwrite": [
+      "ASIC-specific skills and references",
+      "ASIC eval fixtures and trigger checks",
+      "plugin identity, repository URLs, bootstrap names, and package metadata",
+      "license and provenance files"
+    ],
+    "syncMode": "review upstream diffs, apply generic changes selectively, hand-merge protected paths"
+  }
+}

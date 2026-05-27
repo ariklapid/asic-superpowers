@@ -228,6 +228,23 @@ The repo also validates the new skills with the system skill validator and the
 plugin with the system plugin validator. Live harness transcript evals are still
 required before calling a release industry-grade.
 
+## Weekly Upstream Sync
+
+To review new changes from the original Superpowers repo without overwriting
+ASIC-specific behavior, ask Codex to use `syncing-upstream-superpowers` and run:
+
+```bash
+npm run sync:upstream
+```
+
+The script writes a report under `triage/` with candidate generic patches and
+protected manual-review patches. After a reviewed sync passes validation, update
+the tracked upstream marker with:
+
+```bash
+npm run sync:upstream:mark
+```
+
 ## Future Plan
 
 Next release work:
