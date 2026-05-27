@@ -1,0 +1,28 @@
+{
+  "design": {
+    "top_module": "load_store_command_processor",
+    "rtl_files": [
+      "datasets/fixtures/rtl-plan/load_store_command_processor.sv"
+    ]
+  },
+  "reset_domains": [
+    {
+      "name": "rst_n",
+      "active": "active_low",
+      "style": "async",
+      "line": 72
+    }
+  ],
+  "crossings": [],
+  "summary": {
+    "total_crossings": 0,
+    "violations": 0,
+    "by_severity": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "info": 0
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "module": "load_store_command_processor",
+  "file": "datasets/fixtures/rtl-plan/load_store_command_processor.sv",
+  "clock_domains": [
+    {
+      "name": "clk_i"
+    }
+  ],
+  "crossings": [],
+  "summary": {
+    "total_crossings": 0,
+    "violations": 0,
+    "by_severity": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "info": 0
+    }
+  }
+}

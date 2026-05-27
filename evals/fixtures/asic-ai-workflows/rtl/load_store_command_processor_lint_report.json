@@ -1,0 +1,21 @@
+{
+  "design": {
+    "top_module": "load_store_command_processor",
+    "rtl_files": [
+      "datasets/fixtures/rtl-plan/load_store_command_processor.sv"
+    ]
+  },
+  "findings": [],
+  "tool_evidence": [],
+  "summary": {
+    "total_findings": 0,
+    "blocking_findings": 0,
+    "by_severity": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "info": 0
+    }
+  }
+}

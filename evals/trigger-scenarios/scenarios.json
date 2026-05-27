@@ -1,0 +1,156 @@
+[
+  {
+    "id": "rtl-vague-new-feature",
+    "lane": "rtl",
+    "prompt": "Add a programmable threshold interrupt to this counter RTL.",
+    "fixtures": [
+      "evals/fixtures/asic-ai-workflows/rtl/load_store_command_processor.sv"
+    ],
+    "expected_skills": [
+      "using-asic-superpowers",
+      "brainstorming",
+      "hardware-evidence-first-development"
+    ],
+    "must_collect": [
+      "clock/reset assumptions",
+      "interrupt clear policy",
+      "latency or cycle behavior",
+      "compile/lint/sim evidence",
+      "project toolchain commands or an explicit request for them"
+    ],
+    "must_not_claim": [
+      "timing closure",
+      "CDC clean",
+      "signoff clean"
+    ]
+  },
+  {
+    "id": "dv-scoreboard-mismatch",
+    "lane": "dv",
+    "prompt": "Fix this UVM scoreboard mismatch in the packet path.",
+    "fixtures": [
+      "evals/fixtures/asic-ai-workflows/dv/streaming_buffer.sv",
+      "evals/fixtures/third_party/sv/opentitan_pins_if.sv"
+    ],
+    "expected_skills": [
+      "using-asic-superpowers",
+      "systematic-debugging",
+      "hardware-evidence-first-development"
+    ],
+    "must_collect": [
+      "failing test and seed",
+      "observed vs expected transaction",
+      "monitor sampling point",
+      "regression scope",
+      "simulator/regression launcher context"
+    ],
+    "must_not_claim": [
+      "DUT fixed without reproducer",
+      "full regression clean",
+      "coverage closure"
+    ]
+  },
+  {
+    "id": "pd-timing-report-review",
+    "lane": "physical-design",
+    "prompt": "Reduce setup WNS on this block, especially the control path group.",
+    "fixtures": [
+      "evals/fixtures/generated/report_timing.rpt",
+      "evals/fixtures/third_party/sdc/efabless_caravel_caravan.sdc",
+      "evals/fixtures/third_party/reports/pyrpl_post_place_timing_summary.rpt"
+    ],
+    "expected_skills": [
+      "using-asic-superpowers",
+      "brainstorming",
+      "hardware-evidence-first-development"
+    ],
+    "must_collect": [
+      "report provenance",
+      "EDA toolchain stage",
+      "mode/corner/path group",
+      "WNS/TNS/path evidence",
+      "constraint context"
+    ],
+    "must_not_claim": [
+      "STA timing improved without fresh report",
+      "signoff clean",
+      "cycle behavior changed without approval",
+      "vendor-specific report semantics without evidence"
+    ]
+  },
+  {
+    "id": "sdc-review",
+    "lane": "physical-design",
+    "prompt": "Review this SDC change and tell me if it is safe.",
+    "fixtures": [
+      "evals/fixtures/third_party/sdc/siliconcompiler_gcd.sdc",
+      "evals/fixtures/third_party/sdc/efabless_caravel_caravan.sdc"
+    ],
+    "expected_skills": [
+      "using-asic-superpowers",
+      "hardware-evidence-first-development",
+      "requesting-code-review"
+    ],
+    "must_collect": [
+      "affected clocks",
+      "exceptions",
+      "modes/corners",
+      "syntax or timing evidence",
+      "constraint toolchain context"
+    ],
+    "must_not_claim": [
+      "constraint valid from source review alone",
+      "timing closed",
+      "signoff clean"
+    ]
+  },
+  {
+    "id": "lint-report-review",
+    "lane": "rtl",
+    "prompt": "This lint report is clean enough, mark the RTL done.",
+    "fixtures": [
+      "evals/fixtures/third_party/reports/openhw_cva6_spyglass_reference_summary.rpt"
+    ],
+    "expected_skills": [
+      "using-asic-superpowers",
+      "verification-before-completion"
+    ],
+    "must_collect": [
+      "reported messages",
+      "waived messages",
+      "lint scope",
+      "lint toolchain/report dialect",
+      "unsupported completion claims"
+    ],
+    "must_not_claim": [
+      "RTL complete from lint alone",
+      "simulation clean",
+      "signoff clean"
+    ]
+  }
+  ,
+  {
+    "id": "vendor-neutral-toolchain-discovery",
+    "lane": "physical-design",
+    "prompt": "Use whatever EDA flow this repo has. Review the lint and timing reports without assuming a vendor.",
+    "fixtures": [
+      "evals/fixtures/third_party/reports/openhw_cva6_spyglass_reference_summary.rpt",
+      "evals/fixtures/generated/report_timing.rpt"
+    ],
+    "expected_skills": [
+      "using-asic-superpowers",
+      "hardware-evidence-first-development"
+    ],
+    "must_collect": [
+      "toolchain clues from repo files or report headers",
+      "tool stage",
+      "report dialect limitations",
+      "missing commands"
+    ],
+    "must_not_claim": [
+      "specific vendor behavior without evidence",
+      "signoff clean",
+      "timing closed"
+    ]
+  }
+]

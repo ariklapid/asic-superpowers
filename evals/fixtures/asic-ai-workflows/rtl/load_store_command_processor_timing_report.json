@@ -1,0 +1,71 @@
+{
+  "module": "load_store_command_processor",
+  "file": "datasets/fixtures/rtl-plan/load_store_command_processor.sv",
+  "config": "default",
+  "registers": [
+    {
+      "name": "mem_q",
+      "width": 32,
+      "clock": "clk_i",
+      "source": "always_ff",
+      "line": 79
+    },
+    {
+      "name": "mem_valid_q",
+      "width": 4,
+      "clock": "clk_i",
+      "source": "always_ff",
+      "line": 80
+    },
+    {
+      "name": "work_reg_q",
+      "width": 32,
+      "clock": "clk_i",
+      "source": "always_ff",
+      "line": 81
+    },
+    {
+      "name": "work_valid_q",
+      "width": 1,
+      "clock": "clk_i",
+      "source": "always_ff",
+      "line": 82
+    }
+  ],
+  "paths": [
+    {
+      "id": "PATH-001",
+      "from": "mem_q",
+      "to": "work_reg_q",
+      "depth": 6,
+      "difficulty": "moderate",
+      "stages": [
+        {
+          "op": "priority_case",
+          "width": 4,
+          "depth": 6,
+          "line": 24
+        }
+      ],
+      "crosses_module": false,
+      "description": "The mem_q to work_reg_q path uses fixed-priority slot selection before loading the WORK register."
+    }
+  ],
+  "unresolved": [],
+  "summary": {
+    "total_registers": 4,
+    "total_paths": 1,
+    "by_difficulty": {
+      "critical": 0,
+      "hard": 0,
+      "moderate": 1,
+      "easy": 0
+    },
+    "deepest_path": {
+      "id": "PATH-001",
+      "depth": 6,
+      "from": "mem_q",
+      "to": "work_reg_q"
+    }
+  }
+}

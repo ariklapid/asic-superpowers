@@ -1,0 +1,22 @@
+{
+  "name": "asic-superpowers",
+  "description": "Evidence-first Superpowers methodology for ASIC RTL, DV, and Physical Design agents",
+  "version": "5.1.0",
+  "author": {
+    "name": "ariklapid"
+  },
+  "homepage": "https://github.com/ariklapid/asic-superpowers",
+  "repository": "https://github.com/ariklapid/asic-superpowers",
+  "license": "MIT",
+  "keywords": [
+    "asic",
+    "rtl",
+    "systemverilog",
+    "dv",
+    "physical-design",
+    "timing",
+    "constraints",
+    "skills",
+    "workflows"
+  ]
+}

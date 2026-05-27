@@ -1,0 +1,21 @@
+{
+  "name": "asic-superpowers",
+  "version": "5.1.0",
+  "description": "Evidence-first Superpowers methodology for ASIC RTL, DV, and Physical Design agents.",
+  "type": "module",
+  "main": ".opencode/plugins/asic-superpowers.js",
+  "author": "ariklapid",
+  "license": "MIT",
+  "homepage": "https://github.com/ariklapid/asic-superpowers",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ariklapid/asic-superpowers.git"
+  },
+  "scripts": {
+    "validate:skills": "python3 scripts/check_skill_contracts.py",
+    "validate:links": "python3 scripts/check_links.py",
+    "validate:triggers": "python3 scripts/check_trigger_metadata.py",
+    "eval:asic": "python3 scripts/run_asic_evals.py",
+    "validate": "npm run validate:skills && npm run validate:links && npm run validate:triggers && npm run eval:asic"
+  }
+}

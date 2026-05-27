@@ -1,0 +1,37 @@
+Report: timing
+Design: example_control
+Version: synthetic-eval-fixture
+Mode: func
+Corner: ss_0p72v_125c
+Path Group: core_clk
+
+Startpoint: u_ctrl/state_reg[2] (rising edge-triggered flip-flop clocked by core_clk)
+Endpoint: u_ctrl/issue_reg/D (rising edge-triggered flip-flop clocked by core_clk)
+Path Type: max
+
+Point                                      Incr       Path
+----------------------------------------------------------
+clock core_clk (rise edge)                 0.000      0.000
+clock network delay (propagated)           0.180      0.180
+u_ctrl/state_reg/CK                        0.000      0.180
+u_ctrl/state_reg/Q                         0.092      0.272
+u_ctrl/priority_decode/Y                   0.410      0.682
+u_ctrl/issue_mux/Y                         0.355      1.037
+u_ctrl/issue_reg/D                         0.000      1.037
+data arrival time                                     1.037
+
+clock core_clk (rise edge)                 1.250      1.250
+clock network delay (propagated)          -0.060      1.190
+clock uncertainty                         -0.050      1.140
+library setup time                        -0.085      1.055
+data required time                                    1.055
+----------------------------------------------------------
+data required time                                    1.055
+data arrival time                                    -1.037
+----------------------------------------------------------
+slack (MET)                                           0.018
+
+Timing Summary:
+  WNS: 0.018
+  TNS: 0.000
+  Violating Paths: 0
