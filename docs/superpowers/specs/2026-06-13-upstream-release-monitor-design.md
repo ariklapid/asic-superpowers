@@ -43,12 +43,11 @@ processes every release newer than the configured tracking floor that does not
 already have a corresponding issue.
 
 For each release, the script compares its tag against the preceding stable
-release tag in the upstream Git repository. It classifies changed paths with
-the same ownership policy used by
-`scripts/prepare_upstream_superpowers_sync.py`: unprotected paths are candidate
-generic baseline changes, while protected paths require manual review because
-they overlap local identity, ASIC behavior, provenance, validation, or mixed
-ownership integration files.
+release tag in the upstream Git repository. Local-only ASIC files therefore do
+not enter the change set. Changed upstream paths are assigned one of three
+review labels using the ownership policy shared with
+`scripts/prepare_upstream_superpowers_sync.py`: candidate generic, ASIC-owned,
+or mixed/manual.
 
 The script renders an issue proposal and either prints it in dry-run mode or
 creates it through the GitHub API. It never changes repository files or the
@@ -89,7 +88,8 @@ are:
 6. Detect existing open or closed destination issues using a hidden release-tag
    marker.
 7. Fetch the required upstream tags and compute rename-aware changed paths.
-8. Classify changes with shared candidate/protected ownership rules.
+8. Classify changes with the shared `candidate-generic`, `asic-owned`, and
+   `mixed-manual` ownership rules.
 9. Render the issue title and body.
 10. Print proposals in dry-run mode or create missing issues through the GitHub
     API.
@@ -106,10 +106,39 @@ from `scripts/prepare_upstream_superpowers_sync.py` in a small importable module
 for example `scripts/upstream_superpowers_policy.py`.
 
 Both the manual sync report and scheduled release monitor must use this module.
-This avoids two ownership lists drifting apart. The policy remains conservative:
-generic inherited skills and tests can be candidates, while manifests, hooks,
-README and package metadata, GitHub configuration, ASIC skills and references,
-ASIC evals, provenance, and local sync machinery remain protected/manual.
+This avoids two ownership lists drifting apart.
+
+The manual sync report may preserve its existing two patch artifacts for
+compatibility: `candidate-generic.patch` contains `candidate-generic` paths,
+while `protected-manual.patch` combines `asic-owned` and `mixed-manual` paths.
+The release issue presents all three labels separately because it is a review
+index rather than an applyable patch bundle.
+
+The shared policy exposes three explicit labels:
+
+- `candidate-generic`: an upstream path inherited as generic Superpowers
+  behavior, such as generic skills, generic tests, or generic supporting
+  documentation. This label means "eligible for selective porting after
+  review," not "safe to apply automatically."
+- `asic-owned`: a path whose local counterpart is owned by ASIC Superpowers,
+  including `skills/using-asic-superpowers/**`,
+  `skills/hardware-evidence-first-development/**`, ASIC evals and fixtures, and
+  ASIC-specific validation or planning documents. An upstream path matching
+  this policy must not overwrite the local counterpart; reviewers may only
+  extract a clearly applicable generic idea by hand.
+- `mixed-manual`: a path combining upstream functionality with local plugin
+  identity or integration behavior, including manifests, hooks, README and
+  package metadata, GitHub configuration, bootstrap files, provenance, and the
+  local sync machinery. Reviewers must hand-merge relevant upstream changes
+  while preserving ASIC naming, repository URLs, trigger discipline, and local
+  validation.
+
+Classification is path-based and conservative. It does not infer ownership
+from file contents or names outside the policy. When a new ASIC-specific path
+is added to the repository, the same change must add it to the shared ownership
+policy and its tests. Unknown paths default to `candidate-generic` because they
+originate in the upstream-to-upstream release diff, but still require human
+review before porting.
 
 ## Release And Comparison Semantics
 
@@ -141,8 +170,9 @@ The body contains:
 - New and previous stable release tags, publication dates, links, and resolved
   commit SHAs.
 - A GitHub compare link for the two tags.
-- A count and list of candidate generic baseline file changes.
-- A count and list of protected/manual-review file changes.
+- A count and list of `candidate-generic` baseline file changes.
+- A count and list of `asic-owned` file changes.
+- A count and list of `mixed-manual` file changes.
 - The upstream release notes link.
 - An explicit statement when no baseline files changed.
 - A maintainer checklist to inspect upstream changes, selectively port suitable
@@ -193,7 +223,8 @@ Cover:
 - Tracking-floor behavior.
 - Adjacent stable-release pairing, including multiple missed releases.
 - Release ordering and pagination.
-- Candidate versus protected path classification, including renames.
+- Candidate-generic, ASIC-owned, and mixed-manual path classification,
+  including renames and the default for unknown upstream paths.
 - Hidden-marker generation and open/closed issue deduplication.
 - Issue title and Markdown body rendering.
 - Explicit no-baseline-change issue rendering.
@@ -224,8 +255,8 @@ Update the README weekly-sync section to distinguish notification from syncing:
   after `v5.1.0` that lacks a destination issue.
 - Each release produces one issue titled
   `Upstream obra/superpowers <tag> baseline review`.
-- Each issue compares adjacent stable releases and separates candidate generic
-  paths from protected/manual paths.
+- Each issue compares adjacent stable releases and separates
+  `candidate-generic`, `asic-owned`, and `mixed-manual` paths.
 - Releases with no baseline file changes still produce an issue stating that
   result.
 - Open and closed issues both prevent duplicate creation.
