@@ -5,7 +5,7 @@
 This checkout is now an ASIC Superpowers plugin baseline, not a pristine
 upstream Superpowers checkout.
 
-Current status as of 2026-05-23:
+Current status as of 2026-06-13:
 
 - `using-asic-superpowers` and `hardware-evidence-first-development` are the
   ASIC-specific skills.
@@ -15,6 +15,7 @@ Current status as of 2026-05-23:
   checks.
 - Live harness transcript evals are still required before claiming an
   industry-grade release.
+- The upstream release monitor is designed and planned but not implemented.
 
 Future plan:
 
@@ -23,6 +24,56 @@ Future plan:
 - Keep future ASIC additions evidence-driven, lean, and vendor-neutral.
 - Do not open an upstream Superpowers PR from this repo; this is a
   domain-specific standalone plugin.
+
+## Active Planned Work: Upstream Release Monitor
+
+The human partner approved a weekly GitHub Actions monitor for stable
+`obra/superpowers` releases. A fresh implementation session should read these
+documents in order:
+
+1. [Approved design](docs/superpowers/specs/2026-06-13-upstream-release-monitor-design.md)
+2. [Implementation plan](docs/superpowers/plans/2026-06-13-upstream-release-monitor.md)
+
+Planning commits:
+
+- `869798c` - initial approved design
+- `0b22373` - explicit ownership-label amendment
+- `d60d417` - detailed implementation plan
+
+No monitor implementation files have been changed yet. Start execution with
+`asic-superpowers:subagent-driven-development` (recommended) or
+`asic-superpowers:executing-plans`, and follow the plan task by task. Do not
+repeat brainstorming unless a requirement must change.
+
+Implementation constraints:
+
+- Track published, non-prerelease `obra/superpowers` releases after `v5.1.0`.
+- Compare each stable release with the immediately preceding stable release.
+- Create one issue per release, including releases with no baseline changes.
+- Use issue title `Upstream obra/superpowers <tag> baseline review`.
+- Deduplicate against both open and closed issues using the hidden release
+  marker from the design.
+- Keep the automation dependency-free: Python standard library, Git, and the
+  repository-provided `GITHUB_TOKEN` only.
+- Never apply upstream changes, update `.upstream-superpowers.json`, create a
+  sync branch, or open a pull request automatically.
+- Preserve the manual sync artifacts `candidate-generic.patch` and
+  `protected-manual.patch`.
+- Do not modify behavior-shaping skill content for this feature.
+
+Ownership labels are path-based review policy, not automatic merge decisions:
+
+- `candidate-generic`: inherited generic upstream paths; review before porting.
+- `asic-owned`: local ASIC behavior that upstream must not overwrite.
+- `mixed-manual`: identity or integration paths that require hand merging.
+
+Local-only ASIC files never enter the release comparison because it diffs two
+upstream tags. Any new ASIC-specific path added later must also be added to the
+shared ownership policy and its tests.
+
+Before claiming completion, run the focused monitor tests, `npm run validate`,
+a live read-only dry run, and the existing manual sync report command. Update
+the README only when the workflow and monitor actually exist.
 
 ## If You Are an AI Agent
 

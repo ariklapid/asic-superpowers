@@ -16,7 +16,7 @@ Workspace:
 
 ## Current Status
 
-Status as of 2026-05-23:
+Status as of 2026-06-13:
 
 - The repository has been converted from a generic Superpowers baseline into an
   ASIC Superpowers plugin baseline.
@@ -36,6 +36,22 @@ Status as of 2026-05-23:
   ASIC skills when PyYAML is supplied on `PYTHONPATH`.
 - Live harness transcript evals remain the main blocker before claiming an
   industry-grade release.
+- A stable-release monitor for the inherited generic Superpowers baseline has
+  an approved design and implementation plan but has not been implemented.
+
+## Approved Next Work: Upstream Release Monitor
+
+The next implementation session should execute:
+
+- Design: `docs/superpowers/specs/2026-06-13-upstream-release-monitor-design.md`
+- Plan: `docs/superpowers/plans/2026-06-13-upstream-release-monitor.md`
+
+The monitor will poll stable `obra/superpowers` GitHub releases weekly, compare
+adjacent stable tags, and open one deduplicated review issue per release. It
+will classify upstream changes as `candidate-generic`, `asic-owned`, or
+`mixed-manual`, while leaving all synchronization and marker updates under
+human review. The implementation must preserve the plugin's zero-dependency
+posture and the existing manual sync report interface.
 
 ## Executive Decision
 
