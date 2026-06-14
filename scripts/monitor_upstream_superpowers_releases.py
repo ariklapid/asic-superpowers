@@ -34,6 +34,29 @@ class Release:
     html_url: str
 
 
+@dataclass(frozen=True)
+class Change:
+    status: str
+    paths: Tuple[str, ...]
+
+    @property
+    def ownership(self) -> Ownership:
+        return classify_change(self.paths)
+
+    @property
+    def display(self) -> str:
+        if len(self.paths) == 2:
+            return "%s %s -> %s" % (self.status, self.paths[0], self.paths[1])
+        return "%s %s" % (self.status, self.paths[0])
+
+
+@dataclass(frozen=True)
+class Comparison:
+    base_sha: str
+    target_sha: str
+    changes: Tuple[Change, ...]
+
+
 def _required_string(item: dict, key: str) -> str:
     value = item.get(key)
     if not isinstance(value, str) or not value:
@@ -89,6 +112,150 @@ def pending_release_pairs(
         if current.tag not in existing_tags:
             pairs.append((previous, current))
     return pairs
+
+
+def _git(root: Path, *args: str) -> str:
+    process = subprocess.run(
+        ["git", *args], cwd=root, text=True, capture_output=True
+    )
+    if process.returncode != 0:
+        raise RuntimeError(
+            "git %s failed: %s" % (" ".join(args), process.stderr.strip())
+        )
+    return process.stdout
+
+
+def _validate_tag(root: Path, tag: str) -> None:
+    process = subprocess.run(
+        ["git", "check-ref-format", "refs/tags/" + tag],
+        cwd=root,
+        text=True,
+        capture_output=True,
+    )
+    if process.returncode != 0:
+        raise ValueError("invalid upstream release tag %r" % tag)
+
+
+def parse_name_status_z(raw: str) -> Tuple[Change, ...]:
+    fields = raw.split("\0")
+    if fields and fields[-1] == "":
+        fields.pop()
+    changes = []
+    index = 0
+    while index < len(fields):
+        status = fields[index]
+        index += 1
+        path_count = 2 if status.startswith(("R", "C")) else 1
+        paths = tuple(fields[index:index + path_count])
+        if len(paths) != path_count:
+            raise ValueError("malformed git name-status output")
+        changes.append(Change(status, paths))
+        index += path_count
+    return tuple(changes)
+
+
+def compare_tags(upstream_url: str, base_tag: str, target_tag: str) -> Comparison:
+    with tempfile.TemporaryDirectory(prefix="asic-superpowers-upstream-") as temp:
+        root = Path(temp)
+        _git(root, "init", "--quiet")
+        _validate_tag(root, base_tag)
+        _validate_tag(root, target_tag)
+        _git(root, "remote", "add", "origin", upstream_url)
+        for tag in (base_tag, target_tag):
+            _git(
+                root,
+                "fetch",
+                "--quiet",
+                "--no-tags",
+                "--force",
+                "--depth=1",
+                "origin",
+                "refs/tags/%s:refs/tags/%s" % (tag, tag),
+            )
+        base_sha = _git(root, "rev-parse", "refs/tags/%s^{commit}" % base_tag).strip()
+        target_sha = _git(
+            root, "rev-parse", "refs/tags/%s^{commit}" % target_tag
+        ).strip()
+        raw = _git(
+            root,
+            "diff",
+            "--name-status",
+            "--find-renames",
+            "-z",
+            base_sha,
+            target_sha,
+        )
+        return Comparison(base_sha, target_sha, parse_name_status_z(raw))
+
+
+def _render_changes(changes: Sequence[Change], ownership: Ownership) -> list[str]:
+    selected = [change for change in changes if change.ownership is ownership]
+    lines = ["## %s (%d)" % (ownership.value, len(selected)), ""]
+    if not selected:
+        lines.extend(["No changes in this category.", ""])
+        return lines
+    for change in selected:
+        safe_display = json.dumps(change.display, ensure_ascii=False)
+        lines.append("- `%s`" % safe_display[1:-1].replace("`", "\\`"))
+    lines.append("")
+    return lines
+
+
+def render_issue(
+    source_repo: str,
+    previous: Release,
+    current: Release,
+    comparison: Comparison,
+) -> Tuple[str, str]:
+    title = "Upstream %s %s baseline review" % (source_repo, current.tag)
+    compare_url = "https://github.com/%s/compare/%s...%s" % (
+        source_repo,
+        quote(previous.tag, safe=""),
+        quote(current.tag, safe=""),
+    )
+    lines = [
+        issue_marker(current.tag),
+        "",
+        "A new stable upstream release requires baseline review.",
+        "",
+        "## Release window",
+        "",
+        "- Previous stable release: [%s](%s), published `%s`, commit `%s`" % (
+            previous.tag,
+            previous.html_url,
+            previous.published_at,
+            comparison.base_sha,
+        ),
+        "- New stable release: [%s](%s), published `%s`, commit `%s`" % (
+            current.tag,
+            current.html_url,
+            current.published_at,
+            comparison.target_sha,
+        ),
+        "- Compare: [%s...%s](%s)" % (previous.tag, current.tag, compare_url),
+        "- Upstream release notes: %s" % current.html_url,
+        "",
+    ]
+    if not comparison.changes:
+        lines.extend(["No baseline files changed between these stable releases.", ""])
+    for ownership in (
+        Ownership.CANDIDATE_GENERIC,
+        Ownership.ASIC_OWNED,
+        Ownership.MIXED_MANUAL,
+    ):
+        lines.extend(_render_changes(comparison.changes, ownership))
+    lines.extend([
+        "## Maintainer checklist",
+        "",
+        "- [ ] Inspect the upstream compare and release notes.",
+        "- [ ] Run `npm run sync:upstream` on a dedicated sync branch.",
+        "- [ ] Port candidate generic changes selectively.",
+        "- [ ] Preserve ASIC-owned files and hand-merge mixed/manual files.",
+        "- [ ] Run `npm run validate` and review the complete diff.",
+        "- [ ] Update `.upstream-superpowers.json` only after the reviewed sync.",
+        "",
+    ])
+    return title, "\n".join(lines)
 
 
 def _next_link(value: Optional[str]) -> Optional[str]:

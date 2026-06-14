@@ -15,13 +15,18 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from monitor_upstream_superpowers_releases import (  # noqa: E402
+    Change,
+    Comparison,
     GitHubClient,
     Release,
+    compare_tags,
     existing_release_tags,
     issue_marker,
     parse_releases,
     pending_release_pairs,
+    render_issue,
 )
+from upstream_superpowers_policy import Ownership  # noqa: E402
 
 
 class FakeResponse:
@@ -49,6 +54,12 @@ def release(tag, published_at, *, draft=False, prerelease=False):
         "draft": draft,
         "prerelease": prerelease,
     }
+
+
+def git(root: Path, *args: str) -> str:
+    return subprocess.run(
+        ["git", *args], cwd=root, check=True, text=True, capture_output=True
+    ).stdout.strip()
 
 
 class ReleaseDiscoveryTests(unittest.TestCase):
@@ -124,6 +135,110 @@ class ReleaseDiscoveryTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "HTTP 403") as raised:
             client.paginate("https://api.github.com/page/1")
         self.assertNotIn("secret-token", str(raised.exception))
+
+
+class GitComparisonAndRenderingTests(unittest.TestCase):
+    def test_compare_tags_detects_renames_and_three_labels(self):
+        with tempfile.TemporaryDirectory() as temp:
+            upstream = Path(temp) / "upstream"
+            upstream.mkdir()
+            git(upstream, "init")
+            git(upstream, "config", "user.email", "test@example.com")
+            git(upstream, "config", "user.name", "Test")
+            (upstream / "skills/generic").mkdir(parents=True)
+            (upstream / "skills/generic/SKILL.md").write_text("base\n")
+            git(upstream, "add", ".")
+            git(upstream, "commit", "-m", "base")
+            git(upstream, "tag", "v5.1.0")
+
+            git(upstream, "mv", "skills/generic/SKILL.md", "README.md")
+            (upstream / "skills/using-asic-superpowers").mkdir(parents=True)
+            (upstream / "skills/using-asic-superpowers/SKILL.md").write_text(
+                "upstream collision\n"
+            )
+            (upstream / "skills/new-generic").mkdir(parents=True)
+            (upstream / "skills/new-generic/SKILL.md").write_text("new\n")
+            git(upstream, "add", ".")
+            git(upstream, "commit", "-m", "release")
+            git(upstream, "tag", "v5.2.0")
+
+            comparison = compare_tags(str(upstream), "v5.1.0", "v5.2.0")
+
+        labels = {change.ownership for change in comparison.changes}
+        self.assertEqual(
+            labels,
+            {Ownership.CANDIDATE_GENERIC, Ownership.MIXED_MANUAL, Ownership.ASIC_OWNED},
+        )
+        self.assertEqual(len(comparison.base_sha), 40)
+        self.assertEqual(len(comparison.target_sha), 40)
+
+    def test_compare_tags_rejects_an_unresolved_release_tag(self):
+        with tempfile.TemporaryDirectory() as temp:
+            upstream = Path(temp) / "upstream"
+            upstream.mkdir()
+            git(upstream, "init")
+            git(upstream, "config", "user.email", "test@example.com")
+            git(upstream, "config", "user.name", "Test")
+            (upstream / "README.md").write_text("base\n")
+            git(upstream, "add", ".")
+            git(upstream, "commit", "-m", "base")
+            git(upstream, "tag", "v5.1.0")
+            with self.assertRaisesRegex(RuntimeError, "fetch"):
+                compare_tags(str(upstream), "v5.1.0", "v9.9.9")
+
+    def test_render_issue_has_exact_title_sections_and_marker(self):
+        previous = Release(
+            "v5.1.0",
+            "v5.1.0",
+            "2026-05-04T00:00:00Z",
+            "https://example/v5.1.0",
+        )
+        current = Release(
+            "v5.2.0",
+            "v5.2.0",
+            "2026-06-02T00:00:00Z",
+            "https://example/v5.2.0",
+        )
+        comparison = Comparison(
+            base_sha="a" * 40,
+            target_sha="b" * 40,
+            changes=(
+                Change("M", ("skills/systematic-debugging/SKILL.md",)),
+                Change("M", ("skills/using-asic-superpowers/SKILL.md",)),
+                Change("M", ("README.md",)),
+            ),
+        )
+        title, body = render_issue("obra/superpowers", previous, current, comparison)
+        self.assertEqual(title, "Upstream obra/superpowers v5.2.0 baseline review")
+        self.assertIn("## candidate-generic (1)", body)
+        self.assertIn("## asic-owned (1)", body)
+        self.assertIn("## mixed-manual (1)", body)
+        self.assertIn(issue_marker("v5.2.0"), body)
+        self.assertIn(
+            "https://github.com/obra/superpowers/compare/v5.1.0...v5.2.0",
+            body,
+        )
+
+    def test_render_issue_states_when_no_baseline_files_changed(self):
+        previous = Release(
+            "v5.1.0",
+            "v5.1.0",
+            "2026-05-04T00:00:00Z",
+            "https://example/v5.1.0",
+        )
+        current = Release(
+            "v5.2.0",
+            "v5.2.0",
+            "2026-06-02T00:00:00Z",
+            "https://example/v5.2.0",
+        )
+        _, body = render_issue(
+            "obra/superpowers",
+            previous,
+            current,
+            Comparison("a" * 40, "b" * 40, ()),
+        )
+        self.assertIn("No baseline files changed between these stable releases.", body)
 
 
 if __name__ == "__main__":
