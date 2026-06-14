@@ -333,3 +333,87 @@ class GitHubClient:
         if not isinstance(payload, dict) or not isinstance(payload.get("html_url"), str):
             raise RuntimeError("GitHub issue creation returned an invalid payload")
         return payload
+
+
+@dataclass(frozen=True)
+class Config:
+    source_repo: str
+    destination_repo: str
+    tracking_floor: str
+    upstream_url: str
+    dry_run: bool
+
+
+def run_monitor(
+    config: Config,
+    client: GitHubClient,
+    *,
+    comparator: Callable[[str, str, str], Comparison] = compare_tags,
+    output=sys.stdout,
+) -> int:
+    releases = parse_releases(client.list_releases(config.source_repo))
+    existing = existing_release_tags(client.list_issues(config.destination_repo))
+    pairs = pending_release_pairs(releases, config.tracking_floor, existing)
+    if not pairs:
+        print("No missing stable upstream release issues.", file=output)
+        return 0
+    for previous, current in pairs:
+        comparison = comparator(config.upstream_url, previous.tag, current.tag)
+        title, body = render_issue(config.source_repo, previous, current, comparison)
+        if config.dry_run:
+            print("DRY RUN: %s" % title, file=output)
+            print(body, file=output)
+            continue
+        created = client.create_issue(config.destination_repo, title, body)
+        print("Created %s" % created["html_url"], file=output)
+    return 0
+
+
+def _repository(value: str) -> str:
+    if not re.match(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", value):
+        raise argparse.ArgumentTypeError("repository must use OWNER/REPO format")
+    return value
+
+
+def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Create ASIC Superpowers review issues for stable upstream releases."
+    )
+    parser.add_argument("--source-repo", type=_repository, default=DEFAULT_SOURCE_REPO)
+    parser.add_argument(
+        "--destination-repo",
+        type=_repository,
+        default=os.environ.get("GITHUB_REPOSITORY", ""),
+    )
+    parser.add_argument("--tracking-floor", default=DEFAULT_TRACKING_FLOOR)
+    parser.add_argument("--upstream-url")
+    parser.add_argument("--api-url", default=DEFAULT_API_URL)
+    parser.add_argument("--dry-run", action="store_true")
+    args = parser.parse_args(argv)
+    if not args.destination_repo:
+        parser.error("--destination-repo or GITHUB_REPOSITORY is required")
+    if args.upstream_url is None:
+        args.upstream_url = "https://github.com/%s.git" % args.source_repo
+    return args
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    args = parse_args(argv)
+    token = os.environ.get("GITHUB_TOKEN", "")
+    client = GitHubClient(token, api_url=args.api_url)
+    config = Config(
+        source_repo=args.source_repo,
+        destination_repo=args.destination_repo,
+        tracking_floor=args.tracking_floor,
+        upstream_url=args.upstream_url,
+        dry_run=args.dry_run,
+    )
+    return run_monitor(config, client)
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except (RuntimeError, ValueError) as error:
+        print("ERROR: %s" % error, file=sys.stderr)
+        raise SystemExit(1)

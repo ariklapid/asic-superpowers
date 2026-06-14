@@ -17,6 +17,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from monitor_upstream_superpowers_releases import (  # noqa: E402
     Change,
     Comparison,
+    Config,
     GitHubClient,
     Release,
     compare_tags,
@@ -25,6 +26,7 @@ from monitor_upstream_superpowers_releases import (  # noqa: E402
     parse_releases,
     pending_release_pairs,
     render_issue,
+    run_monitor,
 )
 from upstream_superpowers_policy import Ownership  # noqa: E402
 
@@ -239,6 +241,83 @@ class GitComparisonAndRenderingTests(unittest.TestCase):
             Comparison("a" * 40, "b" * 40, ()),
         )
         self.assertIn("No baseline files changed between these stable releases.", body)
+
+
+class FakeClient:
+    def __init__(self, releases, issues):
+        self.releases = releases
+        self.issues = issues
+        self.created = []
+
+    def list_releases(self, repository):
+        return self.releases
+
+    def list_issues(self, repository):
+        return self.issues
+
+    def create_issue(self, repository, title, body):
+        self.created.append((repository, title, body))
+        return {"html_url": "https://github.com/ariklapid/asic-superpowers/issues/99"}
+
+
+class MonitorOrchestrationTests(unittest.TestCase):
+    def setUp(self):
+        self.releases = [
+            release("v5.1.0", "2026-05-04T00:00:00Z"),
+            release("v5.2.0", "2026-06-02T00:00:00Z"),
+            release("v5.3.0", "2026-06-03T00:00:00Z"),
+        ]
+        self.config = Config(
+            source_repo="obra/superpowers",
+            destination_repo="ariklapid/asic-superpowers",
+            tracking_floor="v5.1.0",
+            upstream_url="https://github.com/obra/superpowers.git",
+            dry_run=False,
+        )
+
+    def test_run_creates_only_missing_release_issues_oldest_first(self):
+        client = FakeClient(self.releases, [{"body": issue_marker("v5.2.0")}])
+        compared = []
+
+        def comparator(url, base, target):
+            compared.append((base, target))
+            return Comparison("a" * 40, "b" * 40, ())
+
+        output = io.StringIO()
+        run_monitor(self.config, client, comparator=comparator, output=output)
+        self.assertEqual(compared, [("v5.2.0", "v5.3.0")])
+        self.assertEqual(len(client.created), 1)
+        self.assertIn("Created", output.getvalue())
+
+    def test_dry_run_renders_without_creating(self):
+        client = FakeClient(self.releases[:2], [])
+        config = Config(**dict(self.config.__dict__, dry_run=True))
+        output = io.StringIO()
+        run_monitor(
+            config,
+            client,
+            comparator=lambda url, base, target: Comparison("a" * 40, "b" * 40, ()),
+            output=output,
+        )
+        self.assertEqual(client.created, [])
+        self.assertIn("DRY RUN", output.getvalue())
+        self.assertIn(
+            "Upstream obra/superpowers v5.2.0 baseline review", output.getvalue()
+        )
+
+    def test_creation_failure_stops_before_later_release(self):
+        client = FakeClient(self.releases, [])
+        client.create_issue = mock.Mock(side_effect=RuntimeError("creation failed"))
+        with self.assertRaisesRegex(RuntimeError, "creation failed"):
+            run_monitor(
+                self.config,
+                client,
+                comparator=lambda url, base, target: Comparison(
+                    "a" * 40, "b" * 40, ()
+                ),
+                output=io.StringIO(),
+            )
+        self.assertEqual(client.create_issue.call_count, 1)
 
 
 if __name__ == "__main__":
