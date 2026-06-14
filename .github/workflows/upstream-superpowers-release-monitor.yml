@@ -1,0 +1,49 @@
+name: Upstream obra/superpowers release monitor
+
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Render missing release issues without creating them
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: upstream-superpowers-release-monitor
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out ASIC Superpowers
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Detect stable upstream releases
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SOURCE_REPO: obra/superpowers
+          DESTINATION_REPO: ${{ github.repository }}
+          TRACKING_FLOOR: v5.1.0
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+        run: |
+          args=(
+            --source-repo "$SOURCE_REPO"
+            --destination-repo "$DESTINATION_REPO"
+            --tracking-floor "$TRACKING_FLOOR"
+          )
+          if [[ "$DRY_RUN" == "true" ]]; then
+            args+=(--dry-run)
+          fi
+          scripts/run-python.sh scripts/monitor_upstream_superpowers_releases.py "${args[@]}"
