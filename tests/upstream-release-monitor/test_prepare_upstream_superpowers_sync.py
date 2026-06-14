@@ -75,6 +75,8 @@ class PrepareUpstreamSyncCompatibilityTests(unittest.TestCase):
         self.assertIn("candidate-generic.patch", summary)
         self.assertIn("protected-manual.patch", summary)
         self.assertNotIn("asic-owned.patch", summary)
+        self.assertIn("## Required Agent Flow", summary)
+        self.assertNotIn("Required Codex Flow", summary)
 
 
 if __name__ == "__main__":

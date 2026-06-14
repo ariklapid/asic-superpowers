@@ -1470,8 +1470,8 @@ GITHUB_TOKEN="$(gh auth token)" npm run monitor:upstream-releases -- \
   --dry-run
 ```
 
-After an issue is reviewed, ask Codex to use `syncing-upstream-superpowers` and
-prepare the existing selective sync report:
+After an issue is reviewed, ask your coding agent to use
+`syncing-upstream-superpowers` and prepare the existing selective sync report:
 
 ```bash
 npm run sync:upstream

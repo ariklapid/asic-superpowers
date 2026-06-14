@@ -290,7 +290,7 @@ def build_summary(
         ]
 
     lines += [
-        "## Required Codex Flow",
+        "## Required Agent Flow",
         "",
         "1. Work on a dedicated branch such as `sync/upstream-superpowers-YYYYMMDD`.",
         "2. Read this report and inspect both patch files before editing.",
