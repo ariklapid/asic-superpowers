@@ -240,18 +240,45 @@ The repo also validates the new skills with the system skill validator and the
 plugin with the system plugin validator. Live harness transcript evals are still
 required before calling a release industry-grade.
 
-## Weekly Upstream Sync
+## Upstream Release Monitoring And Sync
 
-To review new changes from the original Superpowers repo without overwriting
-ASIC-specific behavior, ask Codex to use `syncing-upstream-superpowers` and run:
+A weekly GitHub Actions workflow checks published, non-prerelease releases from
+`obra/superpowers`. Every stable release after the `v5.1.0` baseline gets one
+issue titled `Upstream obra/superpowers <tag> baseline review`, including
+releases with no baseline-file changes. Open and closed issues both suppress
+duplicates.
+
+The issue compares adjacent stable releases and classifies changed upstream
+paths as:
+
+- `candidate-generic`: inherited generic behavior eligible for selective review
+- `asic-owned`: local ASIC behavior that upstream must not overwrite
+- `mixed-manual`: integration or identity files that require a hand merge
+
+Local-only ASIC files do not appear in the comparison because the monitor diffs
+two upstream release tags. Unknown upstream paths default to
+`candidate-generic`, but nothing is applied automatically.
+
+To test discovery without creating issues, manually dispatch the
+`Upstream obra/superpowers release monitor` workflow with `dry_run` enabled, or
+run locally with a GitHub token:
+
+```bash
+GITHUB_TOKEN="$(gh auth token)" npm run monitor:upstream-releases -- \
+  --destination-repo ariklapid/asic-superpowers \
+  --dry-run
+```
+
+After an issue is reviewed, ask Codex to use `syncing-upstream-superpowers` and
+prepare the existing selective sync report:
 
 ```bash
 npm run sync:upstream
 ```
 
-The script writes a report under `triage/` with candidate generic patches and
-protected manual-review patches. After a reviewed sync passes validation, update
-the tracked upstream marker with:
+The report writes `candidate-generic.patch` plus a combined
+`protected-manual.patch`. After the reviewed sync passes validation, update the
+tracked upstream marker:
 
 ```bash
 npm run sync:upstream:mark

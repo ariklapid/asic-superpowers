@@ -8,3 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 "$SCRIPT_DIR/run-python.sh" "$SCRIPT_DIR/check_links.py"
 "$SCRIPT_DIR/run-python.sh" "$SCRIPT_DIR/check_trigger_metadata.py"
 "$SCRIPT_DIR/run-python.sh" "$SCRIPT_DIR/run_asic_evals.py"
+"$SCRIPT_DIR/run-python.sh" -m unittest discover \
+  -s "$SCRIPT_DIR/../tests/upstream-release-monitor" \
+  -p 'test_*.py' \
+  -v

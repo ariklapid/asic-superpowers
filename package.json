@@ -14,6 +14,8 @@
   "scripts": {
     "sync:upstream": "scripts/run-python.sh scripts/prepare_upstream_superpowers_sync.py",
     "sync:upstream:mark": "scripts/run-python.sh scripts/prepare_upstream_superpowers_sync.py --mark-synced latest",
+    "monitor:upstream-releases": "scripts/run-python.sh scripts/monitor_upstream_superpowers_releases.py",
+    "test:upstream-monitor": "scripts/run-python.sh -m unittest discover -s tests/upstream-release-monitor -p 'test_*.py' -v",
     "validate:skills": "scripts/run-python.sh scripts/check_skill_contracts.py",
     "validate:links": "scripts/run-python.sh scripts/check_links.py",
     "validate:triggers": "scripts/run-python.sh scripts/check_trigger_metadata.py",
