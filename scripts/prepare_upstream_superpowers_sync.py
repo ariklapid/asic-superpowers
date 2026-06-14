@@ -4,13 +4,14 @@
 from __future__ import annotations
 
 import argparse
-import fnmatch
 import json
 import subprocess
 import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+
+from upstream_superpowers_policy import Ownership, classify_change
 
 DEFAULT_REMOTE = "superpowers-upstream"
 DEFAULT_UPSTREAM_URL = "https://github.com/obra/superpowers.git"
@@ -19,43 +20,18 @@ MARKER_FILE = ".upstream-superpowers.json"
 REPORT_ROOT = "triage"
 DISABLED_PUSH_URL = "DISABLED"
 
-PROTECTED_PATTERNS = (
-    ".upstream-superpowers.json",
-    ".claude-plugin/**",
-    ".codex-plugin/**",
-    ".cursor-plugin/**",
-    ".github/**",
-    ".opencode/**",
-    "AGENTS.md",
-    "ASIC_SUPERPOWERS_PLAN.md",
-    "CLAUDE.md",
-    "CODE_OF_CONDUCT.md",
-    "GEMINI.md",
-    "LICENSE",
-    "PLAN_AUDIT.md",
-    "README.md",
-    "gemini-extension.json",
-    "hooks/**",
-    "package.json",
-    "scripts/check_trigger_metadata.py",
-    "scripts/prepare_upstream_superpowers_sync.py",
-    "scripts/run_asic_evals.py",
-    "skills/hardware-evidence-first-development/**",
-    "skills/using-asic-superpowers/**",
-    "docs/ASIC_PLUGIN_VALIDATION_PLAN.md",
-    "docs/README.opencode.md",
-    "evals/**",
-)
-
-
 @dataclass(frozen=True)
 class Change:
     status: str
     paths: tuple[str, ...]
 
     @property
+    def ownership(self) -> Ownership:
+        return classify_change(self.paths)
+
+    @property
     def protected(self) -> bool:
-        return any(is_protected(path) for path in self.paths)
+        return self.ownership is not Ownership.CANDIDATE_GENERIC
 
     @property
     def display(self) -> str:
@@ -90,11 +66,6 @@ def repo_root() -> Path:
 def die(message: str) -> None:
     print(f"ERROR: {message}", file=sys.stderr)
     raise SystemExit(1)
-
-
-def is_protected(path: str) -> bool:
-    normalized = path.strip("/")
-    return any(fnmatch.fnmatchcase(normalized, pattern) for pattern in PROTECTED_PATTERNS)
 
 
 def ensure_remote(root: Path, name: str, url: str) -> None:
@@ -173,6 +144,20 @@ def parse_changes(raw: str) -> list[Change]:
 
 def changed_path_set(changes: list[Change]) -> list[str]:
     return sorted({path for change in changes for path in change.paths})
+
+
+def partition_changes(changes: list[Change]) -> tuple[list[Change], list[Change]]:
+    candidate = [
+        change
+        for change in changes
+        if change.ownership is Ownership.CANDIDATE_GENERIC
+    ]
+    protected = [
+        change
+        for change in changes
+        if change.ownership is not Ownership.CANDIDATE_GENERIC
+    ]
+    return candidate, protected
 
 
 def write_patch(root: Path, base: str, latest: str, paths: list[str], destination: Path) -> None:
@@ -340,8 +325,7 @@ def prepare_report(args: argparse.Namespace) -> int:
 
     raw_changes = git_out(root, "diff", "--name-status", "--find-renames", base, latest)
     changes = parse_changes(raw_changes)
-    protected_changes = [change for change in changes if change.protected]
-    candidate_changes = [change for change in changes if not change.protected]
+    candidate_changes, protected_changes = partition_changes(changes)
     protected_paths = changed_path_set(protected_changes)
     candidate_paths = changed_path_set(candidate_changes)
     all_paths = changed_path_set(changes)
