@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Iterable, Optional, Sequence, Set, Tuple
 from urllib.error import HTTPError, URLError
-from urllib.parse import quote, unquote
+from urllib.parse import quote, unquote, urlsplit
 from urllib.request import Request, urlopen
 
 from upstream_superpowers_policy import Ownership, classify_change
@@ -268,12 +268,20 @@ def _next_link(value: Optional[str]) -> Optional[str]:
     return None
 
 
+def _url_origin(url: str) -> Tuple[str, str]:
+    parsed = urlsplit(url)
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        raise ValueError("API URL must be an absolute HTTP(S) URL")
+    return parsed.scheme.lower(), parsed.netloc.lower()
+
+
 class GitHubClient:
     def __init__(self, token: str, api_url: str = DEFAULT_API_URL, opener: Callable = urlopen):
         if not token:
             raise ValueError("GITHUB_TOKEN is required")
         self.token = token
         self.api_url = api_url.rstrip("/")
+        self.api_origin = _url_origin(self.api_url)
         self.opener = opener
 
     def request(self, method: str, url: str, payload: Optional[dict] = None):
@@ -311,7 +319,14 @@ class GitHubClient:
             if not isinstance(payload, list):
                 raise RuntimeError("GitHub API %s returned a non-list payload" % next_url)
             items.extend(payload)
-            next_url = _next_link(headers.get("Link"))
+            if not payload:
+                break
+            candidate = _next_link(headers.get("Link"))
+            if candidate and _url_origin(candidate) != self.api_origin:
+                raise RuntimeError(
+                    "GitHub API pagination link points outside configured API origin"
+                )
+            next_url = candidate
         return items
 
     def list_releases(self, repository: str) -> list[dict]:

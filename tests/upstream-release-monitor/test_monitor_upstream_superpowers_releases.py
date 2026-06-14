@@ -131,6 +131,25 @@ class ReleaseDiscoveryTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "non-list payload"):
             client.paginate("https://api.github.com/page/1")
 
+    def test_client_stops_on_empty_page_even_with_next_link(self):
+        opener = mock.Mock(return_value=FakeResponse(
+            [],
+            {"Link": '<https://api.github.com/page/2>; rel="next"'},
+        ))
+        client = GitHubClient("token", opener=opener)
+        self.assertEqual(client.paginate("https://api.github.com/page/1"), [])
+        self.assertEqual(opener.call_count, 1)
+
+    def test_client_rejects_cross_origin_pagination_link(self):
+        opener = mock.Mock(return_value=FakeResponse(
+            [release("v5.2.0", "2026-06-02T00:00:00Z")],
+            {"Link": '<https://example.invalid/page/2>; rel="next"'},
+        ))
+        client = GitHubClient("token", opener=opener)
+        with self.assertRaisesRegex(RuntimeError, "outside configured API origin"):
+            client.paginate("https://api.github.com/page/1")
+        self.assertEqual(opener.call_count, 1)
+
     def test_client_reports_http_failure_without_exposing_token(self):
         error = HTTPError("https://api.github.com/page/1", 403, "forbidden", {}, None)
         client = GitHubClient("secret-token", opener=mock.Mock(side_effect=error))
