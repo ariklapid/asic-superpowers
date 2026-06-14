@@ -5,14 +5,17 @@
 This checkout is now an ASIC Superpowers plugin baseline, not a pristine
 upstream Superpowers checkout.
 
-Current status as of 2026-05-23:
+Current status as of 2026-06-14:
 
 - `using-asic-superpowers` and `hardware-evidence-first-development` are the
   ASIC-specific skills.
 - The plugin is RTL/DV/Physical Design aware and vendor-neutral EDA
   toolchain-aware.
-- `npm run validate` passes deterministic skill, link, trigger, and fixture
-  checks.
+- `npm run validate` passes deterministic skill, link, trigger, fixture, and
+  upstream release-monitor checks.
+- A weekly workflow creates deduplicated review issues for new stable
+  `obra/superpowers` releases. Upstream synchronization remains manual and
+  selective through the shared ownership policy and sync report.
 - Live harness transcript evals are still required before claiming an
   industry-grade release.
 
